@@ -27,9 +27,7 @@ implementation:
       - python3
       - -u
       - |
-        """
-        Example script for training and evaluating the TGCN model for node classification.
-        """
+        
         import torch
         from torch_geometric.datasets import EllipticBitcoinDataset
         import sys
