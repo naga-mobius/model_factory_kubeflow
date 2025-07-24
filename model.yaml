@@ -1,0 +1,142 @@
+name: Build Model
+description: Defines the FFNetwork model with forward-forward learning layers and saves it.
+outputs:
+  - {name: ff_model, type: Model}
+
+implementation:
+  container:
+    image: python:3.10
+    command:
+      - sh
+      - -c
+      - |
+        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet pip --upgrade
+
+        # Step 1: Install PyTorch with CUDA 11.8
+        python3 -m pip install --quiet torch==2.0.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.0.2+cu118 \
+          -f https://download.pytorch.org/whl/torch_stable.html
+
+        # Step 2: Install PyG extensions
+        python3 -m pip install --quiet torch-scatter torch-sparse torch-cluster torch-spline-conv \
+          -f https://data.pyg.org/whl/torch-2.0.1+cu118.html
+
+        # Step 3: Install your NeSy-Factory-Models with extras
+        python3 -m pip install --quiet \
+          "git+https://naga-mobius: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@github.com/gaiangroup/NeSy-Factory-Models.git#egg=nesy-factory-models[geometric,temporal]"
+
+        exec "$0" "$@"
+      - python3
+      - -u
+      - |
+        """
+        Example script for training and evaluating the TGCN model for node classification.
+        """
+        import torch
+        from torch_geometric.datasets import EllipticBitcoinDataset
+        import sys
+        import os
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+        from GNNs import create_model
+        from utils import get_config_by_name, set_random_seed
+        from sklearn.metrics import classification_report
+
+        def analyze_class_distribution(data):
+            """
+            Analyze class distribution and create weights for CrossEntropyLoss and Focal Loss.
+            """
+            print("Analyzing class distribution...")
+            
+            train_labels = data.y[data.train_mask]
+            known_mask = train_labels != 2
+            known_labels = train_labels[known_mask]
+            
+            licit_count = (known_labels == 0).sum().item()
+            illicit_count = (known_labels == 1).sum().item()
+            total_known = len(known_labels)
+            
+            print(f"Training Set Class Distribution:")
+            print(f"   Licit transactions: {licit_count:,} ({licit_count/total_known*100:.1f}%)")
+            print(f"   Illicit transactions: {illicit_count:,} ({illicit_count/total_known*100:.1f}%)")
+
+            # Weights for standard CrossEntropyLoss
+            ce_weight_licit = total_known / (2 * licit_count) if licit_count > 0 else 1
+            ce_weight_illicit = total_known / (2 * illicit_count) if illicit_count > 0 else 1
+            class_weights = [ce_weight_licit, ce_weight_illicit, 0.0]
+            print(f"   CrossEntropy weights: Licit={ce_weight_licit:.3f}, Illicit={ce_weight_illicit:.3f}")
+
+            # Alpha weights for Focal Loss
+            alpha_licit = illicit_count / total_known
+            alpha_illicit = licit_count / total_known
+            alpha_weights = [alpha_licit, alpha_illicit, 0.0]
+            print(f"   Focal Loss alpha: Licit={alpha_licit:.3f}, Illicit={alpha_illicit:.3f}")
+            
+            return alpha_weights, class_weights
+
+        def run_tgcn_example():
+            """
+            Main function to run the TGCN example.
+            """
+            # --- 0. Set Seed for Reproducibility ---
+            set_random_seed(42)
+
+            # --- 1. Load Dataset ---
+            print("\nLoading Elliptic Bitcoin dataset...")
+            dataset = EllipticBitcoinDataset(root='data/EllipticBitcoin')
+            data = dataset[0]
+            print("Dataset loaded successfully.")
+
+            # --- 2. Analyze Data and Get Weights ---
+            alpha_weights, class_weights = analyze_class_distribution(data)
+
+            # --- 3. Create Model ---
+            print("\nCreating TGCN model from config...")
+            config = get_config_by_name('basic_tgcn', 'configs/tgcn_configs.yaml')
+            
+            # Add calculated weights to config
+            config['focal_loss_alpha'] = alpha_weights
+            config['class_weights'] = class_weights
+            config['input_dim'] = data.num_features
+            
+            model = create_model('tgcn', config)
+            
+            print("Model created successfully.")
+            print(model.get_model_info())
+
+            # --- 4. Train Model ---
+            print("\n--- Starting Model Training ---")
+            for epoch in range(model.epochs):
+                loss = model.train_step(data, data.train_mask)
+                if epoch % 10 == 0:
+                    print(f"Epoch {epoch:03d} | Loss: {loss:.4f}")
+            print("--- Finished Model Training ---\n")
+
+            # --- 4. Evaluate Model ---
+            print("--- Starting Model Evaluation ---")
+            eval_metrics = model.eval_step(data, data.test_mask)
+            print(f"Test Accuracy: {eval_metrics['accuracy']:.4f}")
+            
+            # --- 5. Detailed Report ---
+            model.eval()
+            with torch.no_grad():
+                out = model.predict(data)
+                pred = out.argmax(dim=1)
+                
+                test_pred = pred[data.test_mask].cpu().numpy()
+                test_true = data.y[data.test_mask].cpu().numpy()
+                
+                known_mask = test_true != 2
+                test_pred_known = test_pred[known_mask]
+                test_true_known = test_true[known_mask]
+                
+                print("\nClassification Report:")
+                print(classification_report(test_true_known, test_pred_known, target_names=['Licit', 'Illicit'], labels=[0, 1], digits=4))
+
+        if __name__ == '__main__':
+            run_tgcn_example()
+      - -c
+      - |
+
+    # args:
+    #   - --ff_model
+    #   - {outputPath: ff_model}
+        
