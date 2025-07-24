@@ -112,5 +112,4 @@ implementation:
                 print("\nClassification Report:")
                 print(classification_report(test_true_known, test_pred_known, target_names=['Licit', 'Illicit'], labels=[0, 1], digits=4))
 
-        if __name__ == '__main__':
-            run_tgcn_example()
+        run_tgcn_example()
