@@ -66,7 +66,7 @@ implementation:
             set_random_seed(42)
 
             # --- 1. Load Dataset ---
-            print("\nLoading Elliptic Bitcoin dataset...")
+            print("Loading Elliptic Bitcoin dataset...")
             dataset = EllipticBitcoinDataset(root='data/EllipticBitcoin')
             data = dataset[0]
             print("Dataset loaded successfully.")
@@ -75,7 +75,7 @@ implementation:
             alpha_weights, class_weights = analyze_class_distribution(data)
 
             # --- 3. Create Model ---
-            print("\nCreating TGCN model from config...")
+            print("Creating TGCN model from config...")
             config = get_config_by_name('basic_tgcn', 'configs/tgcn_configs.yaml')
 
             config['focal_loss_alpha'] = alpha_weights
@@ -86,30 +86,34 @@ implementation:
             print("Model created successfully.")
             print(model.get_model_info())
 
-            # --- 4. Train Model ---
-            print("\n--- Starting Model Training ---")
-            for epoch in range(model.epochs):
-                loss = model.train_step(data, data.train_mask)
-                if epoch % 10 == 0:
-                    print(f"Epoch {epoch:03d} | Loss: {loss:.4f}")
-            print("--- Finished Model Training ---\n")
+            return model
 
-            # --- 5. Evaluate Model ---
-            print("--- Starting Model Evaluation ---")
-            eval_metrics = model.eval_step(data, data.test_mask)
-            print(f"Test Accuracy: {eval_metrics['accuracy']:.4f}")
+            # # --- 4. Train Model ---
+            # print("--- Starting Model Training ---")
+            # for epoch in range(model.epochs):
+            #     loss = model.train_step(data, data.train_mask)
+            #     if epoch % 10 == 0:
+            #         print(f"Epoch {epoch:03d} | Loss: {loss:.4f}")
+            # print("--- Finished Model Training ---")
 
-            # --- 6. Detailed Report ---
-            model.eval()
-            with torch.no_grad():
-                out = model.predict(data)
-                pred = out.argmax(dim=1)
-                test_pred = pred[data.test_mask].cpu().numpy()
-                test_true = data.y[data.test_mask].cpu().numpy()
-                known_mask = test_true != 2
-                test_pred_known = test_pred[known_mask]
-                test_true_known = test_true[known_mask]
-                print("\nClassification Report:")
-                print(classification_report(test_true_known, test_pred_known, target_names=['Licit', 'Illicit'], labels=[0, 1], digits=4))
+            # # --- 5. Evaluate Model ---
+            # print("--- Starting Model Evaluation ---")
+            # eval_metrics = model.eval_step(data, data.test_mask)
+            # print(f"Test Accuracy: {eval_metrics['accuracy']:.4f}")
 
-        run_tgcn_example()
+            # # --- 6. Detailed Report ---
+            # model.eval()
+            # with torch.no_grad():
+            #     out = model.predict(data)
+            #     pred = out.argmax(dim=1)
+            #     test_pred = pred[data.test_mask].cpu().numpy()
+            #     test_true = data.y[data.test_mask].cpu().numpy()
+            #     known_mask = test_true != 2
+            #     test_pred_known = test_pred[known_mask]
+            #     test_true_known = test_true[known_mask]
+            #     print("Classification Report:")
+            #     print(classification_report(test_true_known, test_pred_known, target_names=['Licit', 'Illicit'], labels=[0, 1], digits=4))
+
+        model = run_tgcn_example()
+
+        
