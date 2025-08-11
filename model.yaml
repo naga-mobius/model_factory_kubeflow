@@ -2,9 +2,9 @@ name: Build Model
 description: Instantiates a model using create_model from the NeSy-Factory-Models GitHub repo, updates config with weights, and saves both model and updated config.
 
 inputs:
-  - { name: weight, type: String, description: "Weight info as JSON string (e.g., alpha, class_weights)" }
-  - { name: config_str, type: String, description: "Model config as JSON string" }
+  - { name: model_config_path, type: String, description: "Path to the model config file" }
   - { name: model_name, type: String, description: "Name of the model to instantiate (e.g., tgcn, ffnetwork)" }
+  - { name: model_config_name, type: String, description: "Name of the model config to instantiate (e.g., tgcn, ffnetwork)" }
 
 outputs:
   - { name: model_out, type: Model, description: "Model weights (torch saved state_dict)" }
@@ -48,18 +48,11 @@ implementation:
         parser.add_argument('--config_updated', type=str, required=True)  # String output path
         args = parser.parse_args()
 
-        # Parse JSON strings directly
-        weights = json.loads(args.weight)
-        config = json.loads(args.config_str)
-
-        # Update config with weights
-        if 'focal_loss_alpha' in weights:
-            config['focal_loss_alpha'] = weights['focal_loss_alpha']
-        if 'class_weights' in weights:
-            config['class_weights'] = weights['class_weights']
-
         # Instantiate model
         model = create_model(args.model_name, config)
+        model = create_model_from_config(args.model_name, args.model_config_name, args.model_config_path)
+        print("Model created successfully.")
+        print(model)
 
         # Ensure output dirs
         os.makedirs(os.path.dirname(args.model_out), exist_ok=True)
