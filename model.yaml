@@ -41,15 +41,15 @@ implementation:
         from nesy_factory_models.GNNs import create_model
 
         parser = argparse.ArgumentParser()
-        parser.add_argument('--weight', type=str, required=True)        # JSON string
-        parser.add_argument('--config_str', type=str, required=True)    # JSON string
+        parser.add_argument('--model_config_path', type=str, required=True)
+        parser.add_argument('--model_config_name', type=str, required=True)
         parser.add_argument('--model_name', type=str, required=True)
         parser.add_argument('--model_out', type=str, required=True)
         parser.add_argument('--config_updated', type=str, required=True)  # String output path
         args = parser.parse_args()
 
         # Instantiate model
-        model = create_model(args.model_name, config)
+        # model = create_model(args.model_name, config)
         model = create_model_from_config(args.model_name, args.model_config_name, args.model_config_path)
         print("Model created successfully.")
         print(model)
@@ -69,10 +69,10 @@ implementation:
         print(f"Model saved to {args.model_out}")
         print(f"Updated config string saved to {args.config_updated}")
     args:
-      - --weight
-      - {inputValue: weight}          # now passed as string
-      - --config_str
-      - {inputValue: config_str}      # now passed as string
+      - --model_config_path
+      - {inputValue: model_config_path}
+      - --model_config_name
+      - {inputValue: model_config_name}
       - --model_name
       - {inputValue: model_name}
       - --model_out
