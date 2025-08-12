@@ -52,18 +52,8 @@ implementation:
         # model = create_model(args.model_name, config)
         # model = create_model_from_config(args.model_name, args.model_config_name, args.model_config_path)
 
-        config = {
-            "input_dim": 10,  # Will be overridden by actual data
-            "hidden_dim": 32,
-            "output_dim": 3,
-            "num_layers": 2,
-            "dropout": 0.3,
-            "optimizer": "adam",
-            "learning_rate": 0.01,
-            "normalize": True,
-            "add_self_loops": True,
-            "epochs": 80
-        }
+        config_json = '{"input_dim": 10, "hidden_dim": 32, "output_dim": 3, "num_layers": 2, "dropout": 0.3, "optimizer": "adam", "learning_rate": 0.01, "normalize": true, "add_self_loops": true, "epochs": 80}'
+        config = json.loads(config_json)
 
         # Instantiate model with hardcoded config
         model = create_model(args.model_name, config)
