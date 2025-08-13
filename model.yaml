@@ -65,9 +65,14 @@ implementation:
         torch.save(model.state_dict(), args.model_out)
 
         # Save updated config as a string
-        config_str_out = json.dumps(config, indent=2)
-        with open(args.config_updated, "w") as f:
-            f.write(config_str_out)
+        # config_str_out = json.dumps(config, indent=2)
+        # with open(args.config_updated, "w") as f:
+        #     f.write(config_str_out)
+
+        with open(args.config_updated, 'w') as f:
+            json.dump(config, f, indent=2)
+        print(f"Saved weights to {args.config_updated}")
+            print(f"config: {config}")
 
         print(f"Model saved to {args.model_out}")
         print(f"Updated config string saved to {args.config_updated}")
