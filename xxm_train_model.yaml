@@ -1,7 +1,7 @@
 name: Train Model
 description: Trains the model using provided data and config parameters.
 inputs:
-  - {name: data_path, type: String}           
+  - {name: data_path, type: Dataset}           
   - {name: model, type: Model}             # TGCN/GCN model from build model brick
   - {name: config, type: String}           # Training configuration (epochs, etc.)
 outputs:
