@@ -84,6 +84,6 @@ implementation:
       - --model
       - {inputPath: model}
       - --config
-      - {inputPath: config}
+      - {inputValue: config}
       - --trained_model
       - {outputPath: trained_model}
