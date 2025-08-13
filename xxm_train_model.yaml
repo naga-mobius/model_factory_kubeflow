@@ -10,7 +10,7 @@ implementation:
   container:
     image: nikhilv215/nesy-factory:v2
     command:
-      - shk
+      - sh
       - -c
       - |
         exec "$0" "$@"
