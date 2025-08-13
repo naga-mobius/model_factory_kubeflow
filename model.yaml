@@ -49,7 +49,7 @@ implementation:
         weight = json.loads(args.weight)
         config['focal_loss_alpha'] = weight['focal_loss_alpha']
         config['class_weights'] = weight['class_weights']
-
+        config['model_name'] = args.model_name
         # Instantiate model with hardcoded config
         model = create_model(args.model_name, config)
         print("Model created successfully.")
