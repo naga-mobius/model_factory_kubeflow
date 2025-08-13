@@ -4,7 +4,6 @@ inputs:
   - {name: data_path, type: String}           
   - {name: model, type: Model}             # TGCN/GCN model from build model brick
   - {name: config, type: String}           # Training configuration (epochs, etc.)
-  - {name: trained_model, type: String}     # Trained model object
 outputs:
   - {name: trained_model, type: Model}     # Trained model object
 implementation:
@@ -57,9 +56,9 @@ implementation:
         model = torch.load(args.model)
             
         print("Loading config...")
-        with open(args.config_file) as f:
-            config = json.load(f)
-        
+        # with open(args.config_file) as f:
+        #     config = json.load(f)
+        config = json.loads(args.config)
         # Extract epochs from config
         epochs = config.get('epochs', model.epochs)
         print(f"Training for {epochs} epochs")
