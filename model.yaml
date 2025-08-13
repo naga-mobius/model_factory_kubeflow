@@ -43,7 +43,10 @@ implementation:
 
         # config_json = '{"input_dim": 10, "hidden_dim": 32, "output_dim": 3, "num_layers": 2, "dropout": 0.3, "optimizer": "adam", "learning_rate": 0.01, "normalize": true, "add_self_loops": true, "epochs": 80}'
         config = json.loads(args.config_str)
-        weight = json.loads(args.weight)
+
+        with open(args.weight, 'r') as f:
+            weight = json.load(f)
+        # weight = json.loads(args.weight)
         config['focal_loss_alpha'] = weight['alpha_weights']
         config['class_weights'] = weight['class_weights']
 
