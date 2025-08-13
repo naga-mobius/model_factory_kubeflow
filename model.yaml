@@ -72,7 +72,7 @@ implementation:
         with open(args.config_updated, 'w') as f:
             json.dump(config, f, indent=2)
         print(f"Saved weights to {args.config_updated}")
-            print(f"config: {config}")
+        print(f"config: {config}")
 
         print(f"Model saved to {args.model_out}")
         print(f"Updated config string saved to {args.config_updated}")
