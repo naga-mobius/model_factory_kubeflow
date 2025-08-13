@@ -52,8 +52,7 @@ implementation:
             print(f"Error loading data: {e}")
             exit(1)
             
-        print("Loading model...")
-        model = torch.load(args.model)
+        
             
         print("Loading config...")
         print("config file is {args/config}")
@@ -66,6 +65,11 @@ implementation:
         # Extract epochs from config
         epochs = config.get('epochs', 100)
         print(f"Training for {epochs} epochs")
+
+        print("Loading model...")
+        
+        model.load_state_dict(torch.load(args.trained_model, map_location=torch.device('cpu')))
+        model = torch.load(args.model)
         
         print(" Starting Model Training ")
         for epoch in range(epochs):
