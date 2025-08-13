@@ -63,14 +63,15 @@ implementation:
                 config = json.load(f)
         print(f"the configs are : {config}")
         # Extract epochs from config
-        epochs = config.get('epochs', 100)
-        print(f"Training for {epochs} epochs")
+        
 
         print("Loading model...")
-        
-        model.load_state_dict(torch.load(args.trained_model, map_location=torch.device('cpu')))
-        model = torch.load(args.model)
-        
+        model_name = config.get('model_name', 'tgcn')
+        model = create_model(model_name, config)
+        model.load_state_dict(torch.load(args.model, map_location=torch.device('cpu')))
+        # model = torch.load(args.model)
+        epochs = config.get('epochs', model.epochs)
+        print(f"Training for {epochs} epochs")
         print(" Starting Model Training ")
         for epoch in range(epochs):
             loss = model.train_step(data, data.train_mask)
