@@ -2,7 +2,8 @@ name: Evaluate Model
 description: Evaluates the trained model and generates performance metrics.
 inputs:
   - {name: trained_model, type: Model}     # Trained model from train brick
-  - {name: data_path, type: Dataset} 
+  - {name: data_path, type: Dataset}
+  - {name: config, type: String}           # Model configuration 
 outputs:
   - {name: metrics, type: Metrics}         # Evaluation metrics and reports
 implementation:
@@ -30,6 +31,7 @@ implementation:
         parser = argparse.ArgumentParser()
         parser.add_argument('--trained_model', type=str, required=True)
         parser.add_argument('--data_path', type=str, required=True)
+        parser.add_argument('--config', type=str, required=True)
         parser.add_argument('--metrics', type=str, required=True)
         args = parser.parse_args()
 
@@ -38,11 +40,11 @@ implementation:
         print(f"Output path: {args.metrics}")
         
         print("Loading config...")
-        print("config file is {args/config}")
+        print(f"config file is {args.config}")
         try: 
             config = json.loads(args.config)
         except : 
-            with open(args.config_file) as f:
+            with open(args.config) as f:
                 config = json.load(f)
         print(f"the configs are : {config}")
 
@@ -51,7 +53,7 @@ implementation:
         # model = torch.load(args.trained_model)
         model_name = config.get('model_name', 'tgcn')
         model = create_model(model_name, config)
-        model.load_state_dict(torch.load(args.model, map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(args.trained_model, map_location=torch.device('cpu')))
         
         #load data
         try:
@@ -84,7 +86,7 @@ implementation:
             test_pred_known = test_pred[known_mask]
             test_true_known = test_true[known_mask]
             
-            print("\nClassification Report:")
+            print("\\nClassification Report:")
             report = classification_report(test_true_known, test_pred_known, 
                                          target_names=['Licit', 'Illicit'], 
                                          labels=[0, 1], digits=4, output_dict=True)
@@ -115,7 +117,9 @@ implementation:
     args:
       - --trained_model
       - {inputPath: trained_model}
-      - --data
+      - --data_path
       - {inputPath: data_path}
+      - --config
+      - {inputValue: config}
       - --metrics
       - {outputPath: metrics}
