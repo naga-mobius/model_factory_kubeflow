@@ -1,5 +1,5 @@
-name: Train Model
-description: Trains the model using provided data and config parameters.
+name: V Train Model
+description: V Trains the model using provided data and config parameters.
 inputs:
   - {name: data_path, type: Dataset}           
   - {name: model, type: Model}             # TGCN/GCN model from build model brick
@@ -89,7 +89,7 @@ implementation:
                 print(f"Created directory: {output_dir}")
             
             # torch.save(model, args.trained_model)
-            torch.save(model.state_dict(), args.model_out)
+            torch.save(model.state_dict(), args.trained_model)
             print(f"Saved trained model to {args.trained_model}")
         except Exception as e:
             print(f"Error saving trained model: {e}")
